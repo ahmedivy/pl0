@@ -51,8 +51,11 @@ int detectError(char *s);
 // Output: Return the numerical token value of s.
 int isOtherValid(char *s);
 
+// Reserved Words: const, var, procedure, call, begin, end, if, fi, then, else, while, do, read, write.
+char *reservedWords[] = {"const", "int", "procedure", "call", "begin", "end", "if", "then", "else", "while", "do", "read", "write"};
 
-
+// Special Symbols: ‘+’, ‘-‘, ‘*’, ‘/’, ‘(‘, ‘)’, ‘=’, ’,’ , ‘.’, ‘ <’, ‘>’,  ‘;’ , ’:’ .
+char specialSymbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':'};
 
 /**MAIN FUNCTION**/
 
