@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef enum
 {
@@ -39,7 +40,6 @@ typedef enum
     elsesym
 } token_type;
 
-// const, var, procedure, call, begin, end, if, fi, then, else, while, do, read, write.
 char *reserved_words[] = {
     "const",
     "var",
@@ -56,7 +56,6 @@ char *reserved_words[] = {
     "read",
     "write"};
 
-// ‘+’, ‘-‘, ‘*’, ‘/’, ‘(‘, ‘)’, ‘=’, ’,’ , ‘.’, ‘ <’, ‘>’,  ‘;’ , ’:’ .
 char *symbols[] = {
     "+",
     "-",
@@ -76,7 +75,7 @@ char *symbols[] = {
     "!=",
     "="};
 
-char source[1024];
+char source[5012];
 int tokenCount = 0;
 
 typedef enum
@@ -94,11 +93,16 @@ typedef struct
     char value[100];
 } Token;
 
-Token tokens[100];
+Token tokens[1024];
 
 int is_letter(char c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+int isSymbol(char c)
+{
+    return !isalnum((unsigned char)c) && !isspace((unsigned char)c) && c != '_' && c != '\0' && c != '\n' && c != '\r' && c != '\t';
 }
 
 int is_digit(char c)
@@ -118,7 +122,7 @@ void tokenize()
     while (source[i] != '\0')
     {
         // whitespace
-        if (source[i] == ' ' || source[i] == '\t' || source[i] == '\n')
+        if (source[i] == ' ' || source[i] == '\t' || source[i] == '\n' || source[i] == '\r' || source[i] == '\0')
         {
             i++;
             continue;
@@ -133,6 +137,19 @@ void tokenize()
                 tokens[tokenCount].type = KEYWORD;
                 tokenCount++;
                 i += strlen(reserved_words[j]);
+                continue;
+            }
+        }
+
+        // symbols
+        for (int j = 0; j < 17; j++)
+        {
+            if (starts_with(&source[i], symbols[j]))
+            {
+                strcpy(tokens[tokenCount].value, symbols[j]);
+                tokens[tokenCount].type = SYMBOL;
+                tokenCount++;
+                i += strlen(symbols[j]);
                 continue;
             }
         }
@@ -182,17 +199,15 @@ void tokenize()
             }
         }
 
-        // symbols
-        for (int j = 0; j < 17; j++)
+        // single character symbols
+        if (isSymbol(source[i]))
         {
-            if (starts_with(&source[i], symbols[j]))
-            {
-                strcpy(tokens[tokenCount].value, symbols[j]);
-                tokens[tokenCount].type = SYMBOL;
-                tokenCount++;
-                i += strlen(symbols[j]);
-                continue;
-            }
+            tokens[tokenCount].value[0] = source[i];
+            tokens[tokenCount].value[1] = '\0';
+            tokens[tokenCount].type = SYMBOL;
+            tokenCount++;
+            i++;
+            continue;
         }
 
         i++;
