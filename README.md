@@ -9,3 +9,5 @@ Compile with
 
 Run with
 `./lexer <input>`
+
+Some sample input files are present in inputs directory
