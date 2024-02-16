@@ -1,3 +1,2 @@
-var ace;
-const := .=4abuac;
+var abcdefghijklmnopqrstuv;
 end.
