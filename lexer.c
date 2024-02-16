@@ -72,7 +72,9 @@ char *symbols[] = {
     "<",
     ">",
     ";",
-    ":"};
+    ":",
+    "!=",
+    "="};
 
 char source[1024];
 int tokenCount = 0;
@@ -116,7 +118,7 @@ void tokenize()
     while (source[i] != '\0')
     {
         // whitespace
-        if (source[i] == ' ')
+        if (source[i] == ' ' || source[i] == '\t' || source[i] == '\n')
         {
             i++;
             continue;
@@ -174,16 +176,14 @@ void tokenize()
             {
                 i += 2;
                 while (source[i] != '*' && source[i + 1] != '/')
-                {
                     i++;
-                }
                 i += 2;
                 continue;
             }
         }
 
         // symbols
-        for (int j = 0; j < 15; j++)
+        for (int j = 0; j < 17; j++)
         {
             if (starts_with(&source[i], symbols[j]))
             {
@@ -281,6 +281,8 @@ int getSymbolValue(char *symbol)
         return leqsym;
     else if (strcmp(symbol, ">=") == 0)
         return geqsym;
+    else if (strcmp(symbol, "!=") == 0)
+        return neqsym;
     else
         return -1;
 }
