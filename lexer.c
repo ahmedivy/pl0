@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
     }
 
     // print lexeme list
-    printf("\nLexeme List:\n");
+    printf("\nToken List:\n");
     for (int i = 0; i < tokenCount; i++)
     {
         if (tokens[i].type == KEYWORD)
