@@ -64,7 +64,9 @@ char *symbols[] = {
     "/",
     "(",
     ")",
-    "=",
+    ":=",
+    "<=",
+    ">=",
     ",",
     ".",
     "<",
@@ -181,7 +183,7 @@ void tokenize()
         }
 
         // symbols
-        for (int j = 0; j < 13; j++)
+        for (int j = 0; j < 15; j++)
         {
             if (starts_with(&source[i], symbols[j]))
             {
@@ -273,8 +275,12 @@ int getSymbolValue(char *symbol)
         return gtrsym;
     else if (strcmp(symbol, ";") == 0)
         return semicolonsym;
-    else if (strcmp(symbol, ":") == 0)
+    else if (strcmp(symbol, ":=") == 0)
         return becomessym;
+    else if (strcmp(symbol, "<=") == 0)
+        return leqsym;
+    else if (strcmp(symbol, ">=") == 0)
+        return geqsym;
     else
         return -1;
 }
@@ -330,6 +336,35 @@ int main(int argc, char *argv[])
                 printf("%d\n", value);
         }
     }
+
+    // print lexeme list
+    printf("\nLexeme List:\n");
+    for (int i = 0; i < tokenCount; i++)
+    {
+        if (tokens[i].type == KEYWORD)
+        {
+            printf("%d ", getKeywordValue(tokens[i].value));
+        }
+        else if (tokens[i].type == IDENTIFIER)
+        {
+            if (strlen(tokens[i].value) > 11)
+                continue;
+            printf("%d %s ", identsym, tokens[i].value);
+        }
+        else if (tokens[i].type == NUMBER)
+        {
+            if (strlen(tokens[i].value) > 5)
+                continue;
+            printf("%d %s ", numbersym, tokens[i].value);
+        }
+        else if (tokens[i].type == SYMBOL)
+        {
+            int value = getSymbolValue(tokens[i].value);
+            if (value != -1)
+                printf("%d ", value);
+        }
+    }
+    printf("\n");
 
     return 0;
 }
