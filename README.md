@@ -1,6 +1,6 @@
 # PL0 Lexical Analyzer
 
-> Lexical Analyzer of PL0 language
+> A minimal pl0 lexical analyzer in single file of pure C
 
 ## Usage
 
@@ -17,3 +17,12 @@ Run with
 ```
 
 Some sample input files are present in inputs directory
+
+## Todo
+
+- compiler
+- syntax analyzer
+- mcode generator
+
+## License
+MIT
