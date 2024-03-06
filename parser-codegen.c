@@ -436,7 +436,7 @@ int symbolTableCheck(char *name)
 {
     for (int i = 0; i < SYMBOL_TABLE_SIZE; i++)
     {
-        if (symbol_table[i].name == name)
+        if (strcmp(symbol_table[i].name, name) == 0)
             return i;
     }
     return -1;
@@ -455,10 +455,11 @@ void addSymbol(int kind, char *name, int val, int level, int addr)
 
 void program()
 {
+    emit(7, 0, 3);
     block();
     if (strcmp(tokens[currentToken].value, ".") != 0)
         printError(0);
-    exit(0);
+    emit(9, 0, 3);
 }
 
 void block()
@@ -471,7 +472,7 @@ void block()
 
 void constDeclaration()
 {
-    if (atoi(tokens[currentToken].value) == constsym)
+    if (getKeywordValue(tokens[currentToken].value) == constsym)
     {
         do
         {
@@ -482,7 +483,7 @@ void constDeclaration()
                 printError(2);
             char *name = tokens[currentToken].value;
             currentToken++;
-            if (atoi(tokens[currentToken].value) != eqsym)
+            if (getSymbolValue(tokens[currentToken].value) != eqsym)
                 printError(3);
             currentToken++;
             if (tokens[currentToken].type != NUMBER)
@@ -500,7 +501,7 @@ void constDeclaration()
 int varDeclaration()
 {
     numVars = 0;
-    if (atoi(tokens[currentToken].value) == varsym)
+    if (getKeywordValue(tokens[currentToken].value) == varsym)
     {
         do
         {
@@ -512,8 +513,8 @@ int varDeclaration()
                 printError(2);
             addSymbol(2, tokens[currentToken].value, 0, 0, 2 + numVars);
             currentToken++;
-        } while (atoi(tokens[currentToken].value) == commasym);
-        if (atoi(tokens[currentToken].value) != semicolonsym)
+        } while (getSymbolValue(tokens[currentToken].value) == commasym);
+        if (getSymbolValue(tokens[currentToken].value) != semicolonsym)
             printError(5);
         currentToken++;
     }
@@ -530,7 +531,7 @@ void statement()
         if (symbol_table[symIdx].kind != 2)
             printError(7);
         currentToken++;
-        if (atoi(tokens[currentToken].value) != becomessym)
+        if (getSymbolValue(tokens[currentToken].value) != becomessym)
             printError(8);
         currentToken++;
         expression();
@@ -538,14 +539,17 @@ void statement()
         emit(4, 0, symbol_table[symIdx].addr);
         return;
     }
-    if (atoi(tokens[currentToken].value) == beginsym)
+    // if (atoi(tokens[currentToken].value) == beginsym)
+    if (getKeywordValue(tokens[currentToken].value) == beginsym)
     {
         do
         {
             currentToken++;
             statement();
-        } while (atoi(tokens[currentToken].value) == semicolonsym);
-        if (atoi(tokens[currentToken].value) != endsym)
+            // } while (atoi(tokens[currentToken].value) == semicolonsym);
+        } while (getSymbolValue(tokens[currentToken].value) == semicolonsym);
+        // if (atoi(tokens[currentToken].value) != endsym)
+        if (getKeywordValue(tokens[currentToken].value) != endsym)
             printError(9);
         currentToken++;
         return;
@@ -557,19 +561,19 @@ void statement()
         int jpcIdx = currentCodeIndex;
         // emit JPC
         emit(8, 0, 0);
-        if (atoi(tokens[currentToken].value) != thensym)
+        if (getKeywordValue(tokens[currentToken].value) != thensym)
             printError(10);
         currentToken++;
         statement();
         code[jpcIdx].M = currentCodeIndex;
         return;
     }
-    if (atoi(tokens[currentToken].value) == whilesym)
+    if (getKeywordValue(tokens[currentToken].value) == whilesym)
     {
         currentToken++;
         int loopIdx = currentCodeIndex;
         condition();
-        if (atoi(tokens[currentToken].value) != dosym)
+        if (getKeywordValue(tokens[currentToken].value) != dosym)
             printError(11);
         currentToken++;
         int jpcIdx = currentCodeIndex;
@@ -581,7 +585,7 @@ void statement()
         code[jpcIdx].M = currentCodeIndex;
         return;
     }
-    if (atoi(tokens[currentToken].value) == readsym)
+    if (getKeywordValue(tokens[currentToken].value) == readsym)
     {
         currentToken++;
         if (tokens[currentToken].type != IDENTIFIER)
@@ -599,7 +603,7 @@ void statement()
         currentToken++;
         return;
     }
-    if (atoi(tokens[currentToken].value) == writesym)
+    if (getKeywordValue(tokens[currentToken].value) == writesym)
     {
         currentToken++;
         expression();
@@ -612,42 +616,42 @@ void statement()
 void condition()
 {
     expression();
-    if (atoi(tokens[currentToken].value) == eqsym)
+    if (getSymbolValue(tokens[currentToken].value) == eqsym)
     {
         currentToken++;
         expression();
         // emit EQL
         emit(8, 0, 8);
     }
-    else if (atoi(tokens[currentToken].value) == neqsym)
+    else if (getSymbolValue(tokens[currentToken].value) == neqsym)
     {
         currentToken++;
         expression();
         // emit NEQ
         emit(8, 0, 9);
     }
-    else if (atoi(tokens[currentToken].value) == lessym)
+    else if (getSymbolValue(tokens[currentToken].value) == lessym)
     {
         currentToken++;
         expression();
         // emit LSS
         emit(8, 0, 7);
     }
-    else if (atoi(tokens[currentToken].value) == leqsym)
+    else if (getSymbolValue(tokens[currentToken].value) == leqsym)
     {
         currentToken++;
         expression();
         // emit LEQ
         emit(8, 0, 8);
     }
-    else if (atoi(tokens[currentToken].value) == gtrsym)
+    else if (getSymbolValue(tokens[currentToken].value) == gtrsym)
     {
         currentToken++;
         expression();
         // emit GTR
         emit(8, 0, 9);
     }
-    else if (atoi(tokens[currentToken].value) == geqsym)
+    else if (getSymbolValue(tokens[currentToken].value) == geqsym)
     {
         currentToken++;
         expression();
@@ -660,15 +664,15 @@ void condition()
 
 void expression()
 {
-    if (atoi(tokens[currentToken].value) == minussym)
+    if (getSymbolValue(tokens[currentToken].value) == minussym)
     {
         currentToken++;
         term();
         // emit NEG
         emit(2, 0, 1);
-        while (atoi(tokens[currentToken].value) == plussym || atoi(tokens[currentToken].value) == minussym)
+        while (getSymbolValue(tokens[currentToken].value) == plussym || getSymbolValue(tokens[currentToken].value) == minussym)
         {
-            if (atoi(tokens[currentToken].value) == plussym)
+            if (getSymbolValue(tokens[currentToken].value) == plussym)
             {
                 currentToken++;
                 term();
@@ -686,12 +690,12 @@ void expression()
     }
     else
     {
-        if (atoi(tokens[currentToken].value) == plussym)
+        if (getSymbolValue(tokens[currentToken].value) == plussym)
             currentToken++;
         term();
-        while (atoi(tokens[currentToken].value) == plussym || atoi(tokens[currentToken].value) == minussym)
+        while (getSymbolValue(tokens[currentToken].value) == plussym || getSymbolValue(tokens[currentToken].value) == minussym)
         {
-            if (atoi(tokens[currentToken].value) == plussym)
+            if (getSymbolValue(tokens[currentToken].value) == plussym)
             {
                 currentToken++;
                 term();
@@ -712,28 +716,28 @@ void expression()
 void term()
 {
     factor();
-    while (atoi(tokens[currentToken].value) == multsym || atoi(tokens[currentToken].value) == slashsym)
+    while (getSymbolValue(tokens[currentToken].value) == multsym || getSymbolValue(tokens[currentToken].value) == slashsym)
     {
-        if (atoi(tokens[currentToken].value) == multsym)
+        if (getSymbolValue(tokens[currentToken].value) == multsym)
         {
             currentToken++;
             factor();
             // emit MUL
-            emit(2, 0, 4);
+            emit(2, 0, 3);
         }
         else
         {
             currentToken++;
             factor();
             // emit DIV
-            emit(2, 0, 5);
+            emit(2, 0, 4);
         }
     }
 }
 
 void factor()
 {
-    if (tokens[currentToken].type == identsym)
+    if (tokens[currentToken].type == IDENTIFIER)
     {
         int symIdx = symbolTableCheck(tokens[currentToken].value);
         if (symIdx == -1)
@@ -752,14 +756,16 @@ void factor()
             printError(7);
         currentToken++;
     }
-    else if (atoi(tokens[currentToken].value) == numbersym)
+    // else if (atoi(tokens[currentToken].value) == numbersym)
+    else if (tokens[currentToken].type == NUMBER)
     {
         // emit LIT
         emit(1, 0, atoi(tokens[currentToken].value));
         currentToken++;
     }
     else if (
-        atoi(tokens[currentToken].value) == lparentsym)
+        // atoi(tokens[currentToken].value) == lparentsym)
+        getSymbolValue(tokens[currentToken].value) == lparentsym)
     {
         currentToken++;
         expression();
@@ -773,14 +779,15 @@ void factor()
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-    {
-        printf("Usage: %s <input>\n", argv[0]);
-        return 1;
-    }
+    // if (argc < 2)
+    // {
+    //     printf("Usage: %s <input>\n", argv[0]);
+    //     return 1;
+    // }
 
     // read file
-    readFile(argv[1]);
+    // readFile(argv[1]);
+    readFile("inputs/input.txt");
 
     // tokenize
     tokenize();
@@ -798,11 +805,21 @@ int main(int argc, char *argv[])
 
     program();
 
-    // print code
+    // print assembly code
+    printf("Assembly code:\n");
+    printf("Line\tOP\tL\tM\n");
     for (int i = 0; i < currentCodeIndex; i++)
     {
-        printf("%s %d %d\n", opcodes[code[i].OP - 1], code[i].L, code[i].M);
+        printf("  %d\t%s\t%d\t%d\n", i, opcodes[code[i].OP - 1], code[i].L, code[i].M);
     }
 
+    // print symbol table
+    printf("\nSymbol Table:\n");
+    printf("Kind | Name           | Value | Level | Address | Mark\n");
+    printf("-----------------------------------------------------\n");
+    for (int i = 0; i < symbolTableIndex; i++)
+    {
+        printf("  %d  | %14s | %5d | %5d | %7d | %4d\n", symbol_table[i].kind, symbol_table[i].name, symbol_table[i].val, symbol_table[i].level, symbol_table[i].addr, symbol_table[i].mark);
+    }
     return 0;
 }
